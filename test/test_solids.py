@@ -29,7 +29,7 @@ def test_fetch_json_data():
     assert res.success
 
     # Ensures output type is OK
-    assert type(res.output_value()) == dict
+    assert type(res.output_value()) in [dict, list]
 
 
 def test_generate_dataframe():

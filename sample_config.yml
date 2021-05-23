@@ -1,0 +1,11 @@
+solids:
+  fetch_json_data:
+    config:
+      api_endpoint: "http://webapibrt.rio.rj.gov.br/api/v1"
+      api_path: "/brt"
+  generate_dataframe:
+    config:
+      data_key: "veiculos"
+  save_dataframe_to_csv:
+    config:
+      output_filename: "veiculos.csv"

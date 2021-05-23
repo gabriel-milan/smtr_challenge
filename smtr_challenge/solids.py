@@ -9,7 +9,12 @@ import pandas as pd
 
 import dagster
 from dagster import solid
-from dagster.core.types.dagster_type import Nothing
+from dagster.core.types.dagster_type import Nothing, DagsterType
+from dagster.core.definitions import InputDefinition
+
+# Creating a DictOrList type for runtime type checking
+DictOrList = DagsterType(type_check_fn=lambda _, value: type(
+    value) in [dict, list], name="DictOrList")
 
 
 @solid(config_schema={"api_endpoint": str, "api_path": str})
@@ -41,8 +46,8 @@ def fetch_json_data(context: dagster.SolidExecutionContext):
     raise Exception(msg)
 
 
-@solid(config_schema={"data_key": str})
-def generate_dataframe(context: dagster.SolidExecutionContext, data: dict):
+@solid(config_schema={"data_key": str}, input_defs=[InputDefinition(name="data", dagster_type=DictOrList)])
+def generate_dataframe(context: dagster.SolidExecutionContext, data):
     """ Builds a Pandas dataframe from data dictionary, using "data_key"
         for extracting a list of items
 
@@ -54,8 +59,12 @@ def generate_dataframe(context: dagster.SolidExecutionContext, data: dict):
     # Parses key from solid configuration
     key: str = context.solid_config["data_key"]
 
-    # Extracts list of items
-    extracted_data: list = data[key]
+    # If key is an empty string, use data as is
+    if key == "":
+        extracted_data: list = data
+    # If not, extracts list of items
+    else:
+        extracted_data: list = data[key]
 
     # Builds dataframe and returns
     df = pd.DataFrame(extracted_data)
